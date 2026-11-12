@@ -1,25 +1,30 @@
-import { createServer } from "node:http";
+import express from "express";
+import { fileURLToPath } from "node:url";
+
+const app = express();
+app.set("view engine", "ejs");
+app.set("views", fileURLToPath(new URL("./views/", import.meta.url)));
 
 const citations = [
   { id: 1, texte: "Apprendre en pratiquant.", auteur: "Équipe du TP" },
 ];
 
-const server = createServer((req, res) => {
-  // Exemple : traiter une méthode et un chemin.
-  if (req.method === "GET" && req.url === "/") {
-    res.writeHead(200, { "Content-Type": "text/plain; charset=utf-8" });
-    return res.end("Bienvenue dans l’API de citations !");
-  }
-
-  if (req.method === "GET" && req.url === "/citations") {
-    res.writeHead(200, { "Content-Type": "application/json" });
-    return res.end(JSON.stringify(citations));
-  }
-
-  res.writeHead(404, { "Content-Type": "application/json" });
-  res.end(JSON.stringify({ message: "Route introuvable" }));
+app.get("/", (req, res) => {
+  res.render("index", { citations });
 });
 
-server.listen(3000, () => {
+app.get("/ping", (req, res) => {
+  res.type("text/plain").send("Serveur de citations prêt.");
+});
+
+app.get("/citations", (req, res) => {
+  res.json(citations);
+});
+
+app.use((req, res) => {
+  res.status(404).json({ message: "Route introuvable" });
+});
+
+app.listen(3000, () => {
   console.log("Serveur disponible sur http://localhost:3000");
 });
