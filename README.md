@@ -1,5 +1,7 @@
 # 03 · Enregistrer les citations dans MongoDB Atlas
 
+**Version corrigée.** Les exercices ci-dessous servent à vérifier le résultat.
+
 [Parcours et rendu](PARCOURS.md) · Lance `npm install`.
 
 ## Prépare Atlas
@@ -11,13 +13,17 @@
 
 [Documentation de connexion MongoDB Atlas](https://www.mongodb.com/docs/atlas/connect-to-database-deployment/)
 
+## Voir le résultat dans le navigateur
+
+Ouvre [la page EJS](http://localhost:3000/) après avoir démarré le serveur. Rafraîchis-la après une requête d’ajout, de modification ou de suppression pour voir la liste à jour. Les requêtes CRUD se font avec curl, Postman ou Bruno. La route `/ping` renvoie du texte avec `res.send()`, et les routes de l’API utilisent `res.json()` pour les réponses JSON.
+
 ## Mini-cours
 
 MongoDB enregistre des documents dans une collection. Avec Mongoose, un schéma décrit les champs d’un document et un modèle permet d’interroger la collection. Les appels à la base sont asynchrones. `await` te permet d’attendre le résultat avant de renvoyer la réponse HTTP. MongoDB attribue un `_id` à chaque citation.
 
 ## À toi de jouer
 
-1. Déclare les champs `texte` et `auteur` dans `models/Citation.js` avec `String`, `required` et `trim`.
+1. Déclare les champs `texte` et `auteur` dans le schéma Mongoose de `server.js` avec `String`, `required` et `trim`.
 2. Complète la connexion avant le démarrage du serveur avec `process.env.MONGODB_URI` et l’option `dbName` réglée sur `tp_citations`. Lance `npm start` et vérifie que `GET /citations` renvoie un tableau.
 3. Ajoute le POST avec `Citation.create`. Enregistre uniquement `texte` et `auteur`. Vérifie comme à la branche précédente que ce sont des chaînes non vides. Réponds 201 avec le document créé, ou 400 si les données sont invalides.
 4. Ajoute `GET /citations/:id` avec `Citation.findById`. Utilise `mongoose.isObjectIdOrHexString` pour renvoyer 400 quand l’identifiant est mal formé et 404 quand il est valide mais absent.

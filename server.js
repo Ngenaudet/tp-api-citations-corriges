@@ -1,4 +1,5 @@
 import express from "express";
+import { fileURLToPath } from "node:url";
 import mongoose from "mongoose";
 
 const citationSchema = new mongoose.Schema({
@@ -8,11 +9,22 @@ const citationSchema = new mongoose.Schema({
 const Citation = mongoose.model("Citation", citationSchema);
 
 const app = express();
+app.set("view engine", "ejs");
+app.set("views", fileURLToPath(new URL("./views/", import.meta.url)));
 app.use(express.json());
 
 function estUneChaineNonVide(valeur) {
   return typeof valeur === "string" && valeur.trim().length > 0;
 }
+
+app.get("/", async (req, res) => {
+  const citations = await Citation.find();
+  res.render("index", { citations });
+});
+
+app.get("/ping", (req, res) => {
+  res.type("text/plain").send("Serveur de citations prêt.");
+});
 
 app.get("/citations", async (req, res) => {
   const citations = await Citation.find();
