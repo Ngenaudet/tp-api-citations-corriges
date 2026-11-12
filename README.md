@@ -1,6 +1,6 @@
 # 03 · Enregistrer les citations dans MongoDB Atlas
 
-**Version corrigée.** Les exercices ci-dessous servent à vérifier le résultat.
+**Corrigé enseignant.** Les consignes ci-dessous permettent de vérifier les réponses.
 
 [Parcours et rendu](PARCOURS.md) · Lance `npm install`.
 
@@ -15,11 +15,37 @@
 
 ## Voir le résultat dans le navigateur
 
-Ouvre [la page EJS](http://localhost:3000/) après avoir démarré le serveur. Rafraîchis-la après une requête d’ajout, de modification ou de suppression pour voir la liste à jour. Les requêtes CRUD se font avec curl, Postman ou Bruno. La route `/ping` renvoie du texte avec `res.send()`, et les routes de l’API utilisent `res.json()` pour les réponses JSON.
+Après avoir complété le schéma et la connexion Atlas, lance `npm start` et ouvre [la page EJS](http://localhost:3000/). Express lit les citations avec `Citation.find()` puis passe la liste à EJS avec `res.render()`. Le navigateur reçoit directement la page HTML.
 
-## Mini-cours
+Ajoute une citation avec le formulaire. Le navigateur envoie un POST à `/ajouter-citation` et `express.urlencoded()` rend les champs disponibles dans `req.body`. Après l’enregistrement dans MongoDB, Express redirige le navigateur vers `/` pour afficher la liste à jour. L’affichage et l’ajout fonctionnent sans `fetch()`.
 
-MongoDB enregistre des documents dans une collection. Avec Mongoose, un schéma décrit les champs d’un document et un modèle permet d’interroger la collection. Les appels à la base sont asynchrones. `await` te permet d’attendre le résultat avant de renvoyer la réponse HTTP. MongoDB attribue un `_id` à chaque citation.
+Pour les exercices de l’API JSON ci-dessous, utilise curl, Postman ou Bruno. Tu peux aussi redémarrer le serveur puis rouvrir la page EJS pour vérifier que la citation ajoutée avec le formulaire a bien été conservée.
+
+## Mini-cours · Du tableau JavaScript à MongoDB
+
+Une **collection** regroupe des documents. Chaque citation est un document avec un `_id` attribué par MongoDB. Le **schéma** Mongoose décrit les champs et leurs règles. Le **modèle** permet de lire et d’écrire dans la collection. Par exemple, cette déclaration décrit une chaîne obligatoire dont les espaces en début et en fin sont retirés.
+
+```js
+titre: { type: String, required: true, trim: true }
+```
+
+Dans le TP, applique cette structure aux champs `texte` et `auteur`. La validation des entrées HTTP permet aussi de vérifier que les valeurs reçues sont bien des chaînes avant de les transmettre à Mongoose.
+
+### Attendre la base de données
+
+`mongoose.connect()` renvoie une promesse. Dans `demarrer()`, place `await mongoose.connect(...)` avant `app.listen()`. Le serveur commence ainsi à accepter les requêtes une fois la connexion établie. L’URI vient de `process.env.MONGODB_URI` et l’option `dbName` choisit la base.
+
+| Opération | Méthode Mongoose | Résultat attendu |
+|---|---|---|
+| Lister | `await Citation.find()` | Un tableau de documents, éventuellement vide |
+| Créer | `await Citation.create({ texte, auteur })` | Le document enregistré avec son `_id` |
+| Chercher par ID | `await Citation.findById(id)` | Le document trouvé ou `null` |
+
+Avant `findById()`, utilise `mongoose.isObjectIdOrHexString(id)` pour vérifier le format. Un format invalide donne `400`. Si le format est valide mais que la recherche renvoie `null`, réponds `404`.
+
+### Suivre le trajet du formulaire EJS
+
+Le navigateur demande `/`. Express lit la collection et EJS transforme les citations en HTML. Quand tu envoies le formulaire, les champs arrivent dans `req.body` grâce à `express.urlencoded()`. Une fois la citation enregistrée, la redirection `303` demande au navigateur de refaire un `GET /`. La page est alors reconstruite à partir de la liste mise à jour. Pour un POST JSON, c’est `express.json()` qui lit le corps de la requête.
 
 ## À toi de jouer
 

@@ -12,6 +12,7 @@ const app = express();
 app.set("view engine", "ejs");
 app.set("views", fileURLToPath(new URL("./views/", import.meta.url)));
 app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
 function estUneChaineNonVide(valeur) {
   return typeof valeur === "string" && valeur.trim().length > 0;
@@ -19,7 +20,24 @@ function estUneChaineNonVide(valeur) {
 
 app.get("/", async (req, res) => {
   const citations = await Citation.find();
-  res.render("index", { citations });
+  res.render("index", { citations, erreur: null });
+});
+
+app.post("/ajouter-citation", async (req, res) => {
+  const texte = req.body?.texte;
+  const auteur = req.body?.auteur;
+
+  if (typeof texte !== "string" || typeof auteur !== "string" ||
+      !texte.trim() || !auteur.trim()) {
+    const citations = await Citation.find();
+    return res.status(400).render("index", {
+      citations,
+      erreur: "Renseigne la citation et son auteur.",
+    });
+  }
+
+  await Citation.create({ texte: texte.trim(), auteur: auteur.trim() });
+  res.redirect(303, "/");
 });
 
 app.get("/ping", (req, res) => {
