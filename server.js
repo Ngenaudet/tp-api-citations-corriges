@@ -1,9 +1,18 @@
 import express from "express";
 import mongoose from "mongoose";
-import Citation from "./models/Citation.js";
+
+const citationSchema = new mongoose.Schema({
+  texte: { type: String, required: true, trim: true },
+  auteur: { type: String, required: true, trim: true },
+});
+const Citation = mongoose.model("Citation", citationSchema);
 
 const app = express();
 app.use(express.json());
+
+function estUneChaineNonVide(valeur) {
+  return typeof valeur === "string" && valeur.trim().length > 0;
+}
 
 app.get("/citations", async (req, res) => {
   const citations = await Citation.find();
@@ -11,23 +20,66 @@ app.get("/citations", async (req, res) => {
 });
 
 app.post("/citations", async (req, res) => {
-  // TODO : valider le corps et enregistrer une citation avec le modèle.
-  res.status(501).json({ message: "À compléter" });
+  const texte = req.body?.texte;
+  const auteur = req.body?.auteur;
+
+  if (!estUneChaineNonVide(texte) || !estUneChaineNonVide(auteur)) {
+    return res.status(400).json({ message: "Texte et auteur obligatoires" });
+  }
+
+  const citation = await Citation.create({ texte, auteur });
+  res.status(201).json(citation);
+});
+
+app.param("id", (req, res, next, id) => {
+  if (!mongoose.isObjectIdOrHexString(id)) {
+    return res.status(400).json({ message: "Identifiant invalide" });
+  }
+
+  next();
 });
 
 app.get("/citations/:id", async (req, res) => {
-  // TODO : vérifier le format de l’ID et chercher le document.
-  res.status(501).json({ message: "À compléter" });
+  const citation = await Citation.findById(req.params.id);
+
+  if (!citation) {
+    return res.status(404).json({ message: "Citation introuvable" });
+  }
+
+  res.json(citation);
 });
 
+// Bonus : modifier une citation.
 app.put("/citations/:id", async (req, res) => {
-  // Bonus : modifier une citation et renvoyer la version mise à jour.
-  res.status(501).json({ message: "À compléter" });
+  const texte = req.body?.texte;
+  const auteur = req.body?.auteur;
+
+  if (!estUneChaineNonVide(texte) || !estUneChaineNonVide(auteur)) {
+    return res.status(400).json({ message: "Texte et auteur obligatoires" });
+  }
+
+  const citation = await Citation.findByIdAndUpdate(
+    req.params.id,
+    { texte, auteur },
+    { returnDocument: "after", runValidators: true }
+  );
+
+  if (!citation) {
+    return res.status(404).json({ message: "Citation introuvable" });
+  }
+
+  res.json(citation);
 });
 
+// Bonus : supprimer une citation.
 app.delete("/citations/:id", async (req, res) => {
-  // Bonus : supprimer une citation et gérer les identifiants invalides ou absents.
-  res.status(501).json({ message: "À compléter" });
+  const citation = await Citation.findByIdAndDelete(req.params.id);
+
+  if (!citation) {
+    return res.status(404).json({ message: "Citation introuvable" });
+  }
+
+  res.status(204).end();
 });
 
 app.use((error, req, res, next) => {
@@ -39,7 +91,8 @@ app.use((error, req, res, next) => {
 });
 
 async function demarrer() {
-  // TODO : attendre mongoose.connect avec MONGODB_URI et dbName « tp_citations ».
+  await mongoose.connect(process.env.MONGODB_URI, { dbName: "tp_citations" });
+
   app.listen(3000, () => {
     console.log("API disponible sur http://localhost:3000");
   });
