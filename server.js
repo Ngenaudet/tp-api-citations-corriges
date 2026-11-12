@@ -11,10 +11,13 @@ const server = createServer((req, res) => {
     return res.end("Bienvenue dans l’API de citations !");
   }
 
-  // TODO 1 : répondre à GET /citations avec le tableau au format JSON.
-  // TODO 2 : renvoyer 404 et un message JSON pour les autres requêtes.
-  res.writeHead(501);
-  res.end("À compléter");
+  if (req.method === "GET" && req.url === "/citations") {
+    res.writeHead(200, { "Content-Type": "application/json" });
+    return res.end(JSON.stringify(citations));
+  }
+
+  res.writeHead(404, { "Content-Type": "application/json" });
+  res.end(JSON.stringify({ message: "Route introuvable" }));
 });
 
 server.listen(3000, () => {
