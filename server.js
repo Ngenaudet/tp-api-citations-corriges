@@ -1,6 +1,9 @@
 import express from "express";
+import { fileURLToPath } from "node:url";
 
 const app = express();
+app.set("view engine", "ejs");
+app.set("views", fileURLToPath(new URL("./views/", import.meta.url)));
 app.use(express.json());
 
 const citations = [
@@ -11,6 +14,14 @@ let prochainId = 2;
 function estUneChaineNonVide(valeur) {
   return typeof valeur === "string" && valeur.trim().length > 0;
 }
+
+app.get("/", (req, res) => {
+  res.render("index", { citations });
+});
+
+app.get("/ping", (req, res) => {
+  res.type("text/plain").send("Serveur de citations prêt.");
+});
 
 app.get("/citations", (req, res) => {
   res.json(citations);

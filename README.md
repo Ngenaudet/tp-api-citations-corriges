@@ -1,6 +1,12 @@
 # 02 · Un CRUD avec Express
 
+**Version corrigée.** Les exercices ci-dessous servent à vérifier le résultat.
+
 [Parcours et rendu](PARCOURS.md) · Lance `npm install` puis `npm start`.
+
+## Voir le résultat dans le navigateur
+
+Ouvre [la page EJS](http://localhost:3000/) après avoir démarré le serveur. Rafraîchis-la après une requête d’ajout, de modification ou de suppression pour voir la liste à jour. Les requêtes CRUD se font avec curl, Postman ou Bruno. La route `/ping` renvoie du texte avec `res.send()`, et les routes de l’API utilisent `res.json()` pour les réponses JSON.
 
 ## Mini-cours
 
